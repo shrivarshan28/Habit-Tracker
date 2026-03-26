@@ -1,0 +1,17 @@
+{
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "MONGODB_URI": {
+      "description": "MongoDB connection string (e.g., from MongoDB Atlas)",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT token signing",
+      "generator": "secret"
+    }
+  }
+}
