@@ -115,7 +115,7 @@ Once deployed, you'll get a URL like:
 https://habit-tracker-shrivarshan.vercel.app
 ```
 
-Click it to visit your live app! 🎉
+Click it REto visit your live app! 🎉
 
 ---
 
