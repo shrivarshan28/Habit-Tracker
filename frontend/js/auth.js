@@ -1,5 +1,7 @@
-// API base URL - adjust for your environment
-const API_URL = 'http://localhost:5000/api';
+// API base URL - works for both local and deployed
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000/api' 
+  : '/api';
 
 // Check authentication and update UI
 function checkAuth() {
