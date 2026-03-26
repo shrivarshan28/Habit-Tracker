@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { sendWelcomeEmail } = require('../utils/sendEmail');
 
 const router = express.Router();
 
@@ -28,6 +29,9 @@ router.post('/register', async (req, res) => {
     // Create new user
     user = new User({ username, email, password });
     await user.save();
+
+    // Send welcome email (async - don't wait for it)
+    sendWelcomeEmail(user.email, user.username);
 
     // Create JWT token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'your_secret_key', {
