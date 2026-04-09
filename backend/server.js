@@ -20,8 +20,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/habit-tra
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.log('MongoDB connection error:', err));
+.then(() => console.log('✓ MongoDB connected successfully'))
+.catch(err => {
+  console.error('✗ MongoDB connection error:', err.message);
+  console.error('  Make sure MongoDB is running or check MONGODB_URI in .env');
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -44,10 +47,26 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/pages/dashboard.html'));
 });
 
-// Error handling
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!', error: err.message });
+  console.error('Error:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method
+  });
+  
+  // Handle MongoDB connection errors
+  if (err.name === 'MongoNetworkError' || err.name === 'MongoParseError') {
+    return res.status(503).json({ 
+      message: 'Database connection error. Please try again later.' 
+    });
+  }
+
+  res.status(err.status || 500).json({ 
+    message: err.message || 'Something went wrong!', 
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
+  });
 });
 
 // Start server

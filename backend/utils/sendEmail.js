@@ -1,19 +1,26 @@
 const nodemailer = require('nodemailer');
 
 // Create transporter - works with Gmail and college emails
+// Will only send if credentials are provided
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
   port: process.env.EMAIL_SMTP_PORT || 587,
   secure: false, // Use TLS
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
+    user: process.env.EMAIL_USER || '',
+    pass: process.env.EMAIL_PASSWORD || ''
   }
 });
 
 // Send welcome email - non-blocking (email failure won't stop registration)
 async function sendWelcomeEmail(userEmail, username) {
   try {
+    // Skip email if credentials not configured
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      console.warn(`⚠️ Email skipped for ${userEmail}: EMAIL_USER or EMAIL_PASSWORD not configured in .env`);
+      return;
+    }
+
     const mailOptions = {
       from: `Habit Health <${process.env.EMAIL_USER}>`,
       to: userEmail,
