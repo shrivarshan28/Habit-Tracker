@@ -11,7 +11,25 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+// CORS configuration for both localhost and deployed URLs
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow localhost in development
+    if (!origin || origin === 'http://localhost:5000' || origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    // Allow Vercel in production
+    if (process.env.NODE_ENV === 'production') {
+      return callback(null, true); // Allow any origin in production
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
@@ -29,6 +47,16 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/habit-tra
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/habits', require('./routes/habits'));
+
+// Health check endpoint (helpful for debugging)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    environment: process.env.NODE_ENV,
+    mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Serve frontend
 app.get('/', (req, res) => {
